@@ -1,12 +1,15 @@
 package com.translation.pelican.web.controller;
 
+import com.translation.pelican.domain.constant.TranslationCountry;
 import com.translation.pelican.domain.constant.TranslationError;
 import com.translation.pelican.domain.translation.CountryTranslationResponse;
 import com.translation.pelican.exception.CountryExistsException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/mock/translation")
@@ -17,9 +20,23 @@ public class MockController {
 
     // These maps can be viewed as temporary mock databases
     private static final String HELLO = "Hello";
-    protected Map<String, String> lithuanianTranslations = new HashMap<>(Map.of(HELLO, "Labas"));
-    protected Map<String, String> estonianTranslations = new HashMap<>(Map.of(HELLO, "Tere"));
-    protected Map<String, String> belgianTranslations = new HashMap<>(Map.of(HELLO, "Hallo"));
+    private static final String HOUSE = "House";
+    private static final String RANDOM = "Random";
+    protected Map<String, String> lithuanianTranslations = new HashMap<>(Map.of(
+            HELLO, "Labas",
+            RANDOM, "randpomInLith",
+            HOUSE, "HouseInLithuanua"
+    ));
+    protected Map<String, String> estonianTranslations = new HashMap<>(Map.of(
+            HELLO, "Tere",
+            RANDOM, "Suvaline",
+            HOUSE, "Maja"
+    ));
+    protected Map<String, String> belgianTranslations = new HashMap<>(Map.of(
+            HELLO, "Hallo",
+            RANDOM, "randomInBelgium",
+            HOUSE, "HouseInBelgian"
+    ));
 
     @GetMapping("/Lithuania/{word}")
     public CountryTranslationResponse mockLithuania(@PathVariable String word) {
@@ -79,6 +96,24 @@ public class MockController {
             throw new CountryExistsException();
         }
         this.lithuanianTranslations.put(key, word);
+    }
+
+    @GetMapping("/{language}")
+    public List<CountryTranslationResponse> getAllEstonian(@PathVariable String language) {
+        Map<String, String> translations = new HashMap<>();
+        if (TranslationCountry.Estonia.name().equals(language)) {
+            translations = estonianTranslations;
+        } else if (TranslationCountry.Lithuania.name().equals(language)) {
+            translations = lithuanianTranslations;
+        } else if (TranslationCountry.Belgium.name().equals(language)) {
+            translations = belgianTranslations;
+        }
+        return translations.entrySet().stream().map(stringStringEntry -> {
+            CountryTranslationResponse translation = new CountryTranslationResponse();
+            translation.setTranslation(stringStringEntry.getValue());
+            translation.setKey(stringStringEntry.getKey());
+            return translation;
+        }).collect(Collectors.toList());
     }
 
 }

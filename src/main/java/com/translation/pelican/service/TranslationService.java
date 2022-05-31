@@ -14,7 +14,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class TranslationService {
@@ -35,12 +39,12 @@ public class TranslationService {
 
     private TranslationData getTranslation(String country, String word) {
         TranslationData translationData = TranslationData.builder()
-                .request(word)
+                .key(word)
                 .errors(null)
-                .result(null)
+                .translation(null)
                 .build();
 
-        setCountryIfValid(country, translationData);
+        setCountryOrCountryError(country, translationData);
 
         if (translationData.hasError(TranslationError.UNSUPPORTED_COUNTRY)) {
             return translationData;
@@ -49,7 +53,7 @@ public class TranslationService {
         }
     }
 
-    private void setCountryIfValid(String country, TranslationData translationData) {
+    private void setCountryOrCountryError(String country, TranslationData translationData) {
         TranslationCountry translationCountry;
         try {
             translationCountry = TranslationCountry.valueOf(country);
@@ -60,11 +64,11 @@ public class TranslationService {
     }
 
     private TranslationData getTranslationByCountry(TranslationData translationData) {
-        String uri = getTranslationUriByCountryCode(translationData.getCountry().getCountryCode()) + "/" + translationData.getRequest();
+        String uri = getTranslationUriByCountryCode(translationData.getCountry().getCountryCode()) + "/" + translationData.getKey();
         CountryTranslationResponse result = restTemplate.getForObject(uri, CountryTranslationResponse.class);
 
         if (result != null) {
-            translationData.setResult(result.getTranslation());
+            translationData.setTranslation(result.getTranslation());
             if (result.getError() != null) {
                 translationData.addError(result.getError());
             }
@@ -76,9 +80,9 @@ public class TranslationService {
 
     private void handleCountrySpecifics(TranslationData translationData) {
         if (TranslationCountry.Estonia.equals(translationData.getCountry())) {
-            translationData.setResult(translationData.getResult().toLowerCase(Locale.ROOT));
+            translationData.setTranslation(translationData.getTranslation().toLowerCase(Locale.ROOT));
         } else {
-            translationData.setResult(StringUtils.capitalize(translationData.getResult()));
+            translationData.setTranslation(StringUtils.capitalize(translationData.getTranslation()));
         }
     }
 
@@ -91,7 +95,8 @@ public class TranslationService {
                 return belgiumApplicationUrl;
             case LIT:
                 return lithuaniaApplicationUrl;
-            default: throw new InvalidCountryException();
+            default:
+                throw new InvalidCountryException();
         }
     }
 
@@ -103,5 +108,10 @@ public class TranslationService {
 
     }
 
+    public List<CountryTranslationResponse> getAllByLanguage(String language) {
+        CountryCode countryCode = TranslationCountry.valueOf(language).getCountryCode();
+        String uri = getTranslationUriByCountryCode(countryCode);
+        return Arrays.stream(Objects.requireNonNull(restTemplate.getForObject(uri, CountryTranslationResponse[].class))).collect(Collectors.toList());
+    }
 
 }

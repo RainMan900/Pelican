@@ -9,6 +9,8 @@ import lombok.Setter;
 // Response class sent by country specific applications: Estonia, Lithuania, Belgium etc
 public class CountryTranslationResponse {
 
+    private String key;
+
     private String translation;
 
     private TranslationError error;

@@ -15,9 +15,9 @@ public class TranslationData {
 
     // The object used to query and pass data inside our application, the result is finally mapped to TranslationOutput class that is sent to the user
 
-    private String request;
+    private String key;
 
-    private String result;
+    private String translation;
 
     private TranslationCountry country;
 

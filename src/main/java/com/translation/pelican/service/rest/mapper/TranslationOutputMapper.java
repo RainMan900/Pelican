@@ -15,7 +15,7 @@ public class TranslationOutputMapper {
 
     public static TranslationOutput map(TranslationData data) {
         TranslationOutput translationOutput = new TranslationOutput();
-        translationOutput.setData(data.getResult());
+        translationOutput.setData(data.getTranslation());
 
         if (data.hasAnyError()) {
             List<String> errors = data.getErrors().stream()

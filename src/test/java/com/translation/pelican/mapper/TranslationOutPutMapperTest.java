@@ -15,9 +15,9 @@ class TranslationOutPutMapperTest {
     @Test
     void map_errors() {
         TranslationData translationDataErr = TranslationData.builder()
-                .request(null)
+                .key(null)
                 .errors(List.of(TranslationError.UNSUPPORTED_COUNTRY))
-                .result(null)
+                .translation(null)
                 .build();
         TranslationOutput output = TranslationOutputMapper.map(translationDataErr);
         assertNotNull(output.getErrors());
@@ -28,12 +28,12 @@ class TranslationOutPutMapperTest {
     void map_success() {
         String result = "Hello";
         TranslationData translationDataErr = TranslationData.builder()
-                .request(null)
+                .key(null)
                 .errors(null)
-                .result(result)
+                .translation(result)
                 .build();
         TranslationOutput output = TranslationOutputMapper.map(translationDataErr);
-        assertEquals(result, translationDataErr.getResult());
+        assertEquals(result, translationDataErr.getTranslation());
         assertNull(output.getErrors());
     }
 
